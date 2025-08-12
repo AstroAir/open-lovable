@@ -1,8 +1,8 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export interface CodeApplicationState {
-  stage: 'analyzing' | 'installing' | 'applying' | 'complete' | null;
+  stage: "analyzing" | "installing" | "applying" | "complete" | null;
   packages?: string[];
   installedPackages?: string[];
   filesGenerated?: string[];
@@ -13,8 +13,10 @@ interface CodeApplicationProgressProps {
   state: CodeApplicationState;
 }
 
-export default function CodeApplicationProgress({ state }: CodeApplicationProgressProps) {
-  if (!state.stage || state.stage === 'complete') return null;
+export default function CodeApplicationProgress({
+  state,
+}: CodeApplicationProgressProps) {
+  if (!state.stage || state.stage === "complete") return null;
 
   return (
     <AnimatePresence mode="wait">
@@ -34,12 +36,12 @@ export default function CodeApplicationProgress({ state }: CodeApplicationProgre
             className="w-4 h-4"
           >
             <svg className="w-full h-full" viewBox="0 0 24 24" fill="none">
-              <circle 
-                cx="12" 
-                cy="12" 
-                r="10" 
-                stroke="currentColor" 
-                strokeWidth="2" 
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeDasharray="31.416"
                 strokeDashoffset="10"

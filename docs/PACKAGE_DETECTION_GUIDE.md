@@ -9,6 +9,7 @@ The E2B sandbox can automatically detect and install packages from XML tags in A
 ## XML Tag Formats
 
 ### Individual Package Tags
+
 Use `<package>` tags for individual packages:
 
 ```xml
@@ -18,6 +19,7 @@ Use `<package>` tags for individual packages:
 ```
 
 ### Multiple Packages Tag
+
 Use `<packages>` tag for multiple packages (comma or newline separated):
 
 ```xml
@@ -36,6 +38,7 @@ Or comma-separated:
 ```
 
 ### Command Execution
+
 Use `<command>` tags to execute shell commands in the sandbox:
 
 ```xml
@@ -130,11 +133,13 @@ export default AboutPage;
 ## How It Works
 
 1. **Parsing**: The `parseAIResponse` function in `/app/api/apply-ai-code/route.ts` extracts:
+
    - Files from `<file>` tags
    - Packages from `<package>` and `<packages>` tags
    - Commands from `<command>` tags
 
-2. **Package Installation**: 
+2. **Package Installation**:
+
    - Packages are automatically installed using npm
    - Both scoped packages (e.g., `@heroicons/react`) and regular packages are supported
    - The system checks if packages are already installed to avoid redundant installations
@@ -146,9 +151,11 @@ export default AboutPage;
 ## API Endpoints
 
 ### `/api/apply-ai-code`
+
 Main endpoint that processes AI responses containing XML tags.
 
 **Request body:**
+
 ```json
 {
   "response": "<AI response with XML tags>",
@@ -158,9 +165,11 @@ Main endpoint that processes AI responses containing XML tags.
 ```
 
 ### `/api/detect-and-install-packages`
+
 Detects packages from import statements in code files.
 
 **Request body:**
+
 ```json
 {
   "files": {
@@ -171,9 +180,11 @@ Detects packages from import statements in code files.
 ```
 
 ### `/api/install-packages`
+
 Directly installs packages in the sandbox.
 
 **Request body:**
+
 ```json
 {
   "packages": ["react-router-dom", "axios", "@heroicons/react"]
@@ -208,6 +219,7 @@ The package detection mechanism integrates seamlessly with the E2B sandbox:
 ## E2B Command Execution Methods
 
 ### Method 1: Using runCode() with Python subprocess
+
 ```javascript
 // Current implementation pattern
 await global.activeSandbox.runCode(`
@@ -221,11 +233,12 @@ print(result.stdout)
 ```
 
 ### Method 2: Using commands.run() directly (Recommended)
+
 ```javascript
 // Direct command execution - cleaner approach
-const result = await global.activeSandbox.commands.run('npm install axios', {
-  cwd: '/home/user/app',
-  timeout: 60000
+const result = await global.activeSandbox.commands.run("npm install axios", {
+  cwd: "/home/user/app",
+  timeout: 60000,
 });
 console.log(result.stdout);
 ```
@@ -233,6 +246,7 @@ console.log(result.stdout);
 ### Command Execution Options
 
 When using `sandbox.commands.run()`, you can specify:
+
 - `cmd`: Command string to execute
 - `background`: Run in background (true) or wait for completion (false)
 - `envs`: Environment variables as key-value pairs
@@ -243,21 +257,23 @@ When using `sandbox.commands.run()`, you can specify:
 - `timeout`: Command timeout in seconds (default: 60)
 
 ### Example: Installing packages with commands.run()
+
 ```javascript
 // Install multiple packages
-const packages = ['react-router-dom', 'axios', '@heroicons/react'];
+const packages = ["react-router-dom", "axios", "@heroicons/react"];
 const result = await global.activeSandbox.commands.run(
-  `npm install ${packages.join(' ')}`,
+  `npm install ${packages.join(" ")}`,
   {
-    cwd: '/home/user/app',
+    cwd: "/home/user/app",
     timeout: 120,
-    on_stdout: (data) => console.log('npm:', data),
-    on_stderr: (data) => console.error('npm error:', data)
+    on_stdout: (data) => console.log("npm:", data),
+    on_stderr: (data) => console.error("npm error:", data),
   }
 );
 
 if (result.exitCode === 0) {
-  console.log('Packages installed successfully');
+  console.log("Packages installed successfully");
 } else {
-  console.error('Installation failed:', result.stderr);
+  console.error("Installation failed:", result.stderr);
 }
+```

@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { Sandbox } from '@e2b/code-interpreter';
-import type { SandboxState } from '@/types/sandbox';
-import { appConfig } from '@/config/app.config';
+import { NextResponse } from "next/server";
+import { Sandbox } from "@e2b/code-interpreter";
+import type { SandboxState } from "@/types/sandbox";
+import { appConfig } from "@/config/app.config";
 
 // Store active sandbox globally
 declare global {
@@ -15,19 +15,19 @@ export async function POST() {
   let sandbox: any = null;
 
   try {
-    console.log('[create-ai-sandbox] Creating base sandbox...');
-    
+    console.log("[create-ai-sandbox] Creating base sandbox...");
+
     // Kill existing sandbox if any
     if (global.activeSandbox) {
-      console.log('[create-ai-sandbox] Killing existing sandbox...');
+      console.log("[create-ai-sandbox] Killing existing sandbox...");
       try {
         await global.activeSandbox.kill();
       } catch (e) {
-        console.error('Failed to close existing sandbox:', e);
+        console.error("Failed to close existing sandbox:", e);
       }
       global.activeSandbox = null;
     }
-    
+
     // Clear existing files tracking
     if (global.existingFiles) {
       global.existingFiles.clear();
@@ -36,21 +36,23 @@ export async function POST() {
     }
 
     // Create base sandbox - we'll set up Vite ourselves for full control
-    console.log(`[create-ai-sandbox] Creating base E2B sandbox with ${appConfig.e2b.timeoutMinutes} minute timeout...`);
-    sandbox = await Sandbox.create({ 
+    console.log(
+      `[create-ai-sandbox] Creating base E2B sandbox with ${appConfig.e2b.timeoutMinutes} minute timeout...`
+    );
+    sandbox = await Sandbox.create({
       apiKey: process.env.E2B_API_KEY,
-      timeoutMs: appConfig.e2b.timeoutMs
+      timeoutMs: appConfig.e2b.timeoutMs,
     });
-    
+
     const sandboxId = (sandbox as any).sandboxId || Date.now().toString();
     const host = (sandbox as any).getHost(appConfig.e2b.vitePort);
-    
+
     console.log(`[create-ai-sandbox] Sandbox created: ${sandboxId}`);
     console.log(`[create-ai-sandbox] Sandbox host: ${host}`);
 
     // Set up a basic Vite React app using Python to write files
-    console.log('[create-ai-sandbox] Setting up Vite React app...');
-    
+    console.log("[create-ai-sandbox] Setting up Vite React app...");
+
     // Write all files in a single Python script to avoid multiple executions
     const setupScript = `
 import os
@@ -227,9 +229,9 @@ print('\\nAll files created successfully!')
 
     // Execute the setup script
     await sandbox.runCode(setupScript);
-    
+
     // Install dependencies
-    console.log('[create-ai-sandbox] Installing dependencies...');
+    console.log("[create-ai-sandbox] Installing dependencies...");
     await sandbox.runCode(`
 import subprocess
 import sys
@@ -248,9 +250,9 @@ else:
     print(f'⚠ Warning: npm install had issues: {result.stderr}')
     # Continue anyway as it might still work
     `);
-    
+
     // Start Vite dev server
-    console.log('[create-ai-sandbox] Starting Vite dev server...');
+    console.log("[create-ai-sandbox] Starting Vite dev server...");
     await sandbox.runCode(`
 import subprocess
 import os
@@ -276,10 +278,12 @@ process = subprocess.Popen(
 print(f'✓ Vite dev server started with PID: {process.pid}')
 print('Waiting for server to be ready...')
     `);
-    
+
     // Wait for Vite to be fully ready
-    await new Promise(resolve => setTimeout(resolve, appConfig.e2b.viteStartupDelay));
-    
+    await new Promise((resolve) =>
+      setTimeout(resolve, appConfig.e2b.viteStartupDelay)
+    );
+
     // Force Tailwind CSS to rebuild by touching the CSS file
     await sandbox.runCode(`
 import os
@@ -300,64 +304,66 @@ print('✓ Tailwind CSS should be loaded')
     global.activeSandbox = sandbox;
     global.sandboxData = {
       sandboxId,
-      url: `https://${host}`
+      url: `https://${host}`,
     };
-    
+
     // Set extended timeout on the sandbox instance if method available
-    if (typeof sandbox.setTimeout === 'function') {
+    if (typeof sandbox.setTimeout === "function") {
       sandbox.setTimeout(appConfig.e2b.timeoutMs);
-      console.log(`[create-ai-sandbox] Set sandbox timeout to ${appConfig.e2b.timeoutMinutes} minutes`);
+      console.log(
+        `[create-ai-sandbox] Set sandbox timeout to ${appConfig.e2b.timeoutMinutes} minutes`
+      );
     }
-    
+
     // Initialize sandbox state
     global.sandboxState = {
       fileCache: {
         files: {},
         lastSync: Date.now(),
-        sandboxId
+        sandboxId,
       },
       sandbox,
       sandboxData: {
         sandboxId,
-        url: `https://${host}`
-      }
+        url: `https://${host}`,
+      },
     };
-    
+
     // Track initial files
-    global.existingFiles.add('src/App.jsx');
-    global.existingFiles.add('src/main.jsx');
-    global.existingFiles.add('src/index.css');
-    global.existingFiles.add('index.html');
-    global.existingFiles.add('package.json');
-    global.existingFiles.add('vite.config.js');
-    global.existingFiles.add('tailwind.config.js');
-    global.existingFiles.add('postcss.config.js');
-    
-    console.log('[create-ai-sandbox] Sandbox ready at:', `https://${host}`);
-    
+    global.existingFiles.add("src/App.jsx");
+    global.existingFiles.add("src/main.jsx");
+    global.existingFiles.add("src/index.css");
+    global.existingFiles.add("index.html");
+    global.existingFiles.add("package.json");
+    global.existingFiles.add("vite.config.js");
+    global.existingFiles.add("tailwind.config.js");
+    global.existingFiles.add("postcss.config.js");
+
+    console.log("[create-ai-sandbox] Sandbox ready at:", `https://${host}`);
+
     return NextResponse.json({
       success: true,
       sandboxId,
       url: `https://${host}`,
-      message: 'Sandbox created and Vite React app initialized'
+      message: "Sandbox created and Vite React app initialized",
     });
-
   } catch (error) {
-    console.error('[create-ai-sandbox] Error:', error);
-    
+    console.error("[create-ai-sandbox] Error:", error);
+
     // Clean up on error
     if (sandbox) {
       try {
         await sandbox.kill();
       } catch (e) {
-        console.error('Failed to close sandbox on error:', e);
+        console.error("Failed to close sandbox on error:", e);
       }
     }
-    
+
     return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : 'Failed to create sandbox',
-        details: error instanceof Error ? error.stack : undefined
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to create sandbox",
+        details: error instanceof Error ? error.stack : undefined,
       },
       { status: 500 }
     );

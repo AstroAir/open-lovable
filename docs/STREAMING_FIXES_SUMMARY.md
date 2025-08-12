@@ -3,21 +3,28 @@
 ## Issues Fixed
 
 ### 1. "Cannot read properties of undefined (reading 'split')"
+
 **Location**: `/api/install-packages/route.ts` line 119
 **Cause**: `installResult.output` was undefined
 **Fix**: Added fallback to handle different output formats:
+
 ```typescript
-const output = installResult?.output || installResult?.logs?.stdout?.join('\n') || '';
+const output =
+  installResult?.output || installResult?.logs?.stdout?.join("\n") || "";
 ```
 
 ### 2. "Cannot read properties of undefined (reading 'push')"
+
 **Location**: `/api/apply-ai-code-stream/route.ts` various lines
-**Causes**: 
+**Causes**:
+
 - Arrays not properly initialized
 - Results object properties accessed without checks
 
 **Fixes**:
+
 - Added array checks before operations:
+
 ```typescript
 const packagesArray = Array.isArray(packages) ? packages : [];
 const parsedPackages = Array.isArray(parsed.packages) ? parsed.packages : [];
@@ -26,12 +33,14 @@ const commandsArray = Array.isArray(parsed.commands) ? parsed.commands : [];
 ```
 
 - Added null checks before push operations:
+
 ```typescript
 if (results.filesCreated) results.filesCreated.push(normalizedPath);
 if (results.errors) results.errors.push(`Failed to create ${file.path}`);
 ```
 
 ### 3. Improved Error Handling
+
 - Added checks for undefined chunks in streaming
 - Added proper error messages for all failure cases
 - Ensured all arrays are initialized before use
@@ -53,6 +62,7 @@ if (results.errors) results.errors.push(`Failed to create ${file.path}`);
 ## UI Feedback Flow
 
 Users now see:
+
 1. 🔍 Analyzing code and detecting dependencies
 2. 📦 Starting code application
 3. Step 1: Installing X packages (with real-time npm output)

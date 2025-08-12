@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 declare global {
   var activeSandbox: any;
@@ -7,14 +7,17 @@ declare global {
 export async function GET(request: NextRequest) {
   try {
     if (!global.activeSandbox) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'No active sandbox' 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No active sandbox",
+        },
+        { status: 400 }
+      );
     }
-    
-    console.log('[sandbox-logs] Fetching Vite dev server logs...');
-    
+
+    console.log("[sandbox-logs] Fetching Vite dev server logs...");
+
     // Get the last N lines of the Vite dev server output
     const result = await global.activeSandbox.runCode(`
 import subprocess
@@ -48,27 +51,29 @@ except Exception as e:
         "status": "error"
     }))
     `);
-    
+
     try {
-      const logData = JSON.parse(result.output || '{}');
+      const logData = JSON.parse(result.output || "{}");
       return NextResponse.json({
         success: true,
-        ...logData
+        ...logData,
       });
     } catch {
       return NextResponse.json({
         success: true,
         hasErrors: false,
         logs: [result.output],
-        status: 'unknown'
+        status: "unknown",
       });
     }
-    
   } catch (error) {
-    console.error('[sandbox-logs] Error:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: (error as Error).message 
-    }, { status: 500 });
+    console.error("[sandbox-logs] Error:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: (error as Error).message,
+      },
+      { status: 500 }
+    );
   }
 }

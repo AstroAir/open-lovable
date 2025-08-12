@@ -65,14 +65,15 @@ The UI now supports these message types with distinct styling:
 
 1. **System Messages** (`bg-[#36322F] text-white text-sm`)
    - General information and status updates
-   
 2. **Command Messages** (`bg-gray-100 text-gray-600 font-mono text-sm`)
+
    - Input commands: Blue prefix (`$`)
    - Output: Gray text
    - Errors: Red text
    - Success: Green text
 
 3. **User Messages** (`bg-[#36322F] text-white`)
+
    - User input and queries
 
 4. **AI Messages** (`bg-secondary text-foreground`)

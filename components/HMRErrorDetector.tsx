@@ -1,11 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 interface HMRErrorDetectorProps {
   iframeRef: React.RefObject<HTMLIFrameElement>;
-  onErrorDetected: (errors: Array<{ type: string; message: string; package?: string }>) => void;
+  onErrorDetected: (
+    errors: Array<{ type: string; message: string; package?: string }>
+  ) => void;
 }
 
-export default function HMRErrorDetector({ iframeRef, onErrorDetected }: HMRErrorDetectorProps) {
+export default function HMRErrorDetector({
+  iframeRef,
+  onErrorDetected,
+}: HMRErrorDetectorProps) {
   const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -17,32 +22,40 @@ export default function HMRErrorDetector({ iframeRef, onErrorDetected }: HMRErro
         if (!iframeDoc) return;
 
         // Check for Vite error overlay
-        const errorOverlay = iframeDoc.querySelector('vite-error-overlay');
+        const errorOverlay = iframeDoc.querySelector("vite-error-overlay");
         if (errorOverlay) {
           // Try to extract error message
-          const messageElement = errorOverlay.shadowRoot?.querySelector('.message-body');
+          const messageElement =
+            errorOverlay.shadowRoot?.querySelector(".message-body");
           if (messageElement) {
-            const errorText = messageElement.textContent || '';
-            
+            const errorText = messageElement.textContent || "";
+
             // Parse import errors
-            const importMatch = errorText.match(/Failed to resolve import "([^"]+)"/);
+            const importMatch = errorText.match(
+              /Failed to resolve import "([^"]+)"/
+            );
             if (importMatch) {
               const packageName = importMatch[1];
-              if (!packageName.startsWith('.')) {
+              if (!packageName.startsWith(".")) {
                 // Extract base package name
                 let finalPackage = packageName;
-                if (packageName.startsWith('@')) {
-                  const parts = packageName.split('/');
-                  finalPackage = parts.length >= 2 ? parts.slice(0, 2).join('/') : packageName;
+                if (packageName.startsWith("@")) {
+                  const parts = packageName.split("/");
+                  finalPackage =
+                    parts.length >= 2
+                      ? parts.slice(0, 2).join("/")
+                      : packageName;
                 } else {
-                  finalPackage = packageName.split('/')[0];
+                  finalPackage = packageName.split("/")[0];
                 }
 
-                onErrorDetected([{
-                  type: 'npm-missing',
-                  message: `Failed to resolve import "${packageName}"`,
-                  package: finalPackage
-                }]);
+                onErrorDetected([
+                  {
+                    type: "npm-missing",
+                    message: `Failed to resolve import "${packageName}"`,
+                    package: finalPackage,
+                  },
+                ]);
               }
             }
           }

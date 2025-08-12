@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 // Stub endpoint to prevent 404 errors
 // This endpoint is being called but the source is unknown
@@ -7,6 +7,6 @@ export async function GET() {
   return NextResponse.json({
     success: true,
     errors: [],
-    message: 'No Vite errors detected'
+    message: "No Vite errors detected",
   });
 }
