@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 declare global {
   var activeSandbox: any;
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     if (!global.activeSandbox) {
       return NextResponse.json(

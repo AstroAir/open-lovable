@@ -60,7 +60,7 @@ export default function HMRErrorDetector({
             }
           }
         }
-      } catch (error) {
+      } catch {
         // Cross-origin errors are expected, ignore them
       }
     };

@@ -82,7 +82,7 @@ export function analyzeEditIntent(
         /from\s+scratch/i,
       ],
       type: EditType.FULL_REBUILD,
-      fileResolver: (p, m) => [m.entryPoint],
+      fileResolver: (_, m) => [m.entryPoint],
     },
     {
       patterns: [
@@ -91,7 +91,7 @@ export function analyzeEditIntent(
         /use\s+(\w+)\s+(library|framework)/i,
       ],
       type: EditType.ADD_DEPENDENCY,
-      fileResolver: (p, m) => findPackageFiles(m),
+      fileResolver: (_, m) => findPackageFiles(m),
     },
   ];
 
@@ -175,7 +175,7 @@ function findComponentFiles(prompt: string, manifest: FileManifest): string[] {
     for (const element of uiElements) {
       if (lowerPrompt.includes(element)) {
         // Look for exact component file matches first
-        for (const [path, fileInfo] of Object.entries(manifest.files)) {
+        for (const [path] of Object.entries(manifest.files)) {
           const fileName = path.split("/").pop()?.toLowerCase() || "";
           // Only match if the filename contains the element name
           if (fileName.includes(element + ".") || fileName === element) {
@@ -188,7 +188,7 @@ function findComponentFiles(prompt: string, manifest: FileManifest): string[] {
         }
 
         // If no exact file match, look for the element in file names (but be more selective)
-        for (const [path, fileInfo] of Object.entries(manifest.files)) {
+        for (const [path] of Object.entries(manifest.files)) {
           const fileName = path.split("/").pop()?.toLowerCase() || "";
           if (fileName.includes(element)) {
             files.push(path);
@@ -366,7 +366,6 @@ function findComponentByContent(
   manifest: FileManifest
 ): string[] {
   const files: string[] = [];
-  const lowerPrompt = prompt.toLowerCase();
 
   console.log(
     "[findComponentByContent] Searching for content in prompt:",
@@ -461,7 +460,7 @@ function getSuggestedContext(
 /**
  * Resolve import path to actual file path
  */
-function resolveImportPath(
+function _resolveImportPath(
   fromFile: string,
   importPath: string,
   manifest: FileManifest
@@ -490,7 +489,7 @@ function resolveImportPath(
   // Handle @/ alias (common in Vite projects)
   if (importPath.startsWith("@/")) {
     const srcPath = importPath.replace("@/", "/home/user/app/src/");
-    return resolveImportPath(fromFile, srcPath, manifest);
+    return _resolveImportPath(fromFile, srcPath, manifest);
   }
 
   return null;

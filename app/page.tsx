@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { appConfig } from "@/config/app.config";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +21,7 @@ import {
   SiCss3,
   SiJson,
 } from "@/lib/icons";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import CodeApplicationProgress, {
   type CodeApplicationState,
 } from "@/components/CodeApplicationProgress";
@@ -197,6 +198,7 @@ export default function AISandboxPage() {
     };
 
     initializePage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only on mount
 
   useEffect(() => {
@@ -291,91 +293,91 @@ export default function AISandboxPage() {
     );
   };
 
-  const handleSurfaceError = (errors: any[]) => {
-    // Function kept for compatibility but Vite errors are now handled by template
+  // const handleSurfaceError = (errors: any[]) => {
+  //   // Function kept for compatibility but Vite errors are now handled by template
 
-    // Focus the input
-    const textarea = document.querySelector("textarea") as HTMLTextAreaElement;
-    if (textarea) {
-      textarea.focus();
-    }
-  };
+  //   // Focus the input
+  //   const textarea = document.querySelector("textarea") as HTMLTextAreaElement;
+  //   if (textarea) {
+  //     textarea.focus();
+  //   }
+  // };
 
-  const installPackages = async (packages: string[]) => {
-    if (!sandboxData) {
-      addChatMessage("No active sandbox. Create a sandbox first!", "system");
-      return;
-    }
+  // const installPackages = async (packages: string[]) => {
+  //   if (!sandboxData) {
+  //     addChatMessage("No active sandbox. Create a sandbox first!", "system");
+  //     return;
+  //   }
 
-    try {
-      const response = await fetch("/api/install-packages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ packages }),
-      });
+  //   try {
+  //     const response = await fetch("/api/install-packages", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ packages }),
+  //     });
 
-      if (!response.ok) {
-        throw new Error(`Failed to install packages: ${response.statusText}`);
-      }
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to install packages: ${response.statusText}`);
+  //     }
 
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
+  //     const reader = response.body?.getReader();
+  //     const decoder = new TextDecoder();
 
-      while (reader) {
-        const { done, value } = await reader.read();
-        if (done) break;
+  //     while (reader) {
+  //       const { done, value } = await reader.read();
+  //       if (done) break;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n");
+  //       const chunk = decoder.decode(value);
+  //       const lines = chunk.split("\n");
 
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            try {
-              const data = JSON.parse(line.slice(6));
+  //       for (const line of lines) {
+  //         if (line.startsWith("data: ")) {
+  //           try {
+  //             const data = JSON.parse(line.slice(6));
 
-              switch (data.type) {
-                case "command":
-                  // Don't show npm install commands - they're handled by info messages
-                  if (!data.command.includes("npm install")) {
-                    addChatMessage(data.command, "command", {
-                      commandType: "input",
-                    });
-                  }
-                  break;
-                case "output":
-                  addChatMessage(data.message, "command", {
-                    commandType: "output",
-                  });
-                  break;
-                case "error":
-                  if (data.message && data.message !== "undefined") {
-                    addChatMessage(data.message, "command", {
-                      commandType: "error",
-                    });
-                  }
-                  break;
-                case "warning":
-                  addChatMessage(data.message, "command", {
-                    commandType: "output",
-                  });
-                  break;
-                case "success":
-                  addChatMessage(`${data.message}`, "system");
-                  break;
-                case "status":
-                  addChatMessage(data.message, "system");
-                  break;
-              }
-            } catch (e) {
-              console.error("Failed to parse SSE data:", e);
-            }
-          }
-        }
-      }
-    } catch (error: any) {
-      addChatMessage(`Failed to install packages: ${error.message}`, "system");
-    }
-  };
+  //             switch (data.type) {
+  //               case "command":
+  //                 // Don't show npm install commands - they're handled by info messages
+  //                 if (!data.command.includes("npm install")) {
+  //                   addChatMessage(data.command, "command", {
+  //                     commandType: "input",
+  //                   });
+  //                 }
+  //                 break;
+  //               case "output":
+  //                 addChatMessage(data.message, "command", {
+  //                   commandType: "output",
+  //                 });
+  //                 break;
+  //               case "error":
+  //                 if (data.message && data.message !== "undefined") {
+  //                   addChatMessage(data.message, "command", {
+  //                     commandType: "error",
+  //                   });
+  //                 }
+  //                 break;
+  //               case "warning":
+  //                 addChatMessage(data.message, "command", {
+  //                   commandType: "output",
+  //                 });
+  //                 break;
+  //               case "success":
+  //                 addChatMessage(`${data.message}`, "system");
+  //                 break;
+  //               case "status":
+  //                 addChatMessage(data.message, "system");
+  //                 break;
+  //             }
+  //           } catch (e) {
+  //             console.error("Failed to parse SSE data:", e);
+  //           }
+  //         }
+  //       }
+  //     }
+  //   } catch (error: any) {
+  //     addChatMessage(`Failed to install packages: ${error.message}`, "system");
+  //   }
+  // };
 
   const checkSandboxStatus = async () => {
     try {
@@ -572,7 +574,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   ) {
                     setCodeApplicationState({
                       stage: "applying",
-                      filesGenerated: results.filesCreated,
+                      filesGenerated: data.filesCreated || 0,
                     });
                   }
                   break;
@@ -665,7 +667,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                   }
                   break;
               }
-            } catch (e) {
+            } catch {
               // Ignore parse errors
             }
           }
@@ -751,22 +753,22 @@ Tip: I automatically detect and install npm packages from your code imports (lik
             log(data.explanation);
           }
 
-          if (data.autoCompleted) {
+          if ((data as any).autoCompleted) {
             log("Auto-generating missing components...", "command");
 
-            if (data.autoCompletedComponents) {
+            if ((data as any).autoCompletedComponents) {
               setTimeout(() => {
                 log("Auto-generated missing components:", "info");
-                data.autoCompletedComponents.forEach((comp: string) => {
+                (data as any).autoCompletedComponents.forEach((comp: string) => {
                   log(`  ${comp}`, "command");
                 });
               }, 1000);
             }
-          } else if (data.warning) {
-            log(data.warning, "error");
+          } else if ((data as any).warning) {
+            log((data as any).warning, "error");
 
-            if (data.missingImports && data.missingImports.length > 0) {
-              const missingList = data.missingImports.join(", ");
+            if ((data as any).missingImports && (data as any).missingImports.length > 0) {
+              const missingList = (data as any).missingImports.join(", ");
               addChatMessage(
                 `Ask me to "create the missing components: ${missingList}" to fix these import errors.`,
                 "system"
@@ -776,7 +778,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
 
           log("Code applied successfully!");
           console.log("[applyGeneratedCode] Response data:", data);
-          console.log("[applyGeneratedCode] Debug info:", data.debug);
+          console.log("[applyGeneratedCode] Debug info:", (data as any).debug);
           console.log("[applyGeneratedCode] Current sandboxData:", sandboxData);
           console.log(
             "[applyGeneratedCode] Current iframe element:",
@@ -944,7 +946,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                       );
                       return;
                     }
-                  } catch (e) {
+                  } catch {
                     console.log(
                       "[applyGeneratedCode] Cannot access iframe content (CORS), assuming loaded"
                     );
@@ -1046,44 +1048,44 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     }
   };
 
-  const restartViteServer = async () => {
-    try {
-      addChatMessage("Restarting Vite dev server...", "system");
+  // const restartViteServer = async () => {
+  //   try {
+  //     addChatMessage("Restarting Vite dev server...", "system");
 
-      const response = await fetch("/api/restart-vite", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
+  //     const response = await fetch("/api/restart-vite", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //     });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          addChatMessage("✓ Vite dev server restarted successfully!", "system");
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       if (data.success) {
+  //         addChatMessage("✓ Vite dev server restarted successfully!", "system");
 
-          // Refresh the iframe after a short delay
-          setTimeout(() => {
-            if (iframeRef.current && sandboxData?.url) {
-              iframeRef.current.src = `${sandboxData.url}?t=${Date.now()}`;
-            }
-          }, 2000);
-        } else {
-          addChatMessage(`Failed to restart Vite: ${data.error}`, "error");
-        }
-      } else {
-        addChatMessage("Failed to restart Vite server", "error");
-      }
-    } catch (error) {
-      console.error("[restartViteServer] Error:", error);
-      addChatMessage(
-        `Error restarting Vite: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
-        "error"
-      );
-    }
-  };
+  //         // Refresh the iframe after a short delay
+  //         setTimeout(() => {
+  //           if (iframeRef.current && sandboxData?.url) {
+  //             iframeRef.current.src = `${sandboxData.url}?t=${Date.now()}`;
+  //           }
+  //         }, 2000);
+  //       } else {
+  //         addChatMessage(`Failed to restart Vite: ${data.error}`, "error");
+  //       }
+  //     } else {
+  //       addChatMessage("Failed to restart Vite server", "error");
+  //     }
+  //   } catch (error) {
+  //     console.error("[restartViteServer] Error:", error);
+  //     addChatMessage(
+  //       `Error restarting Vite: ${
+  //         error instanceof Error ? error.message : "Unknown error"
+  //       }`,
+  //       "error"
+  //     );
+  //   }
+  // };
 
-  const applyCode = async () => {
+  const _applyCode = async () => {
     const code = promptInput.trim();
     if (!code) {
       log("Please enter some code first", "error");
@@ -1153,9 +1155,9 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         } = {};
 
                         // Create a map of edited files
-                        const editedFiles = new Set(
+                        const _editedFiles = new Set(
                           generationProgress.files
-                            .filter((f) => f.edited)
+                            .filter((f) => (f as any).edited)
                             .map((f) => f.path)
                         );
 
@@ -1171,7 +1173,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           if (!fileTree[dir]) fileTree[dir] = [];
                           fileTree[dir].push({
                             name: fileName,
-                            edited: file.edited || false,
+                            edited: (file as any).edited || false,
                           });
                         });
 
@@ -1614,10 +1616,12 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       ) {
         return (
           <div className="relative w-full h-full bg-gray-100">
-            <img
-              src={urlScreenshot}
+            <Image
+              src={urlScreenshot || ''}
               alt="Website preview"
               className="w-full h-full object-contain"
+              fill
+              style={{ objectFit: 'contain' }}
             />
             {(generationProgress.isGenerating || isPreparingDesign) && (
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -1959,7 +1963,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               type: fileType,
                               completed: true,
                               edited: true,
-                            },
+                            } as any,
                             ...updatedState.files.slice(existingFileIndex + 1),
                           ];
                         } else {
@@ -1972,7 +1976,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                               type: fileType,
                               completed: true,
                               edited: false,
-                            },
+                            } as any,
                           ];
                         }
 
@@ -2346,7 +2350,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     }
   };
 
-  const clearChatHistory = () => {
+  const _clearChatHistory = () => {
     setChatMessages([
       {
         content: "Chat history cleared. How can I help you?",
@@ -2356,7 +2360,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     ]);
   };
 
-  const cloneWebsite = async () => {
+  const _cloneWebsite = async () => {
     let url = urlInput.trim();
     if (!url) {
       setUrlStatus((prev) => [...prev, "Please enter a URL"]);
@@ -3022,7 +3026,7 @@ Focus on the key sections and content, making it clean and modern.`;
                               type: fileType,
                               completed: true,
                               edited: true,
-                            },
+                            } as any,
                             ...updatedState.files.slice(existingFileIndex + 1),
                           ];
                         } else {
@@ -3035,7 +3039,7 @@ Focus on the key sections and content, making it clean and modern.`;
                               type: fileType,
                               completed: true,
                               edited: false,
-                            },
+                            } as any,
                           ];
                         }
 
@@ -3264,10 +3268,12 @@ Focus on the key sections and content, making it clean and modern.`;
 
           {/* Header */}
           <div className="absolute top-0 left-0 right-0 z-20 px-6 py-4 flex items-center justify-between animate-[fadeIn_0.8s_ease-out]">
-            <img
+            <Image
               src="/firecrawl-logo-with-fire.webp"
               alt="Firecrawl"
               className="h-8 w-auto"
+              width={32}
+              height={32}
             />
             <a
               href="https://github.com/mendableai/open-lovable"
@@ -3545,7 +3551,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 >
                   {appConfig.ai.availableModels.map((model) => (
                     <option key={model} value={model}>
-                      {appConfig.ai.modelDisplayNames[model] || model}
+                      {(appConfig.ai.modelDisplayNames as any)[model] || model}
                     </option>
                   ))}
                 </select>
@@ -3557,10 +3563,12 @@ Focus on the key sections and content, making it clean and modern.`;
 
       <div className="bg-card px-4 py-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <img
+          <Image
             src="/firecrawl-logo-with-fire.webp"
             alt="Firecrawl"
             className="h-8 w-auto"
+            width={32}
+            height={32}
           />
         </div>
         <div className="flex items-center gap-2">
@@ -3581,7 +3589,7 @@ Focus on the key sections and content, making it clean and modern.`;
           >
             {appConfig.ai.availableModels.map((model) => (
               <option key={model} value={model}>
-                {appConfig.ai.modelDisplayNames[model] || model}
+                {(appConfig.ai.modelDisplayNames as any)[model] || model}
               </option>
             ))}
           </select>
@@ -3680,10 +3688,12 @@ Focus on the key sections and content, making it clean and modern.`;
 
                   return (
                     <div key={idx} className="flex items-center gap-2 text-sm">
-                      <img
+                      <Image
                         src={favicon}
                         alt={siteName}
                         className="w-4 h-4 rounded"
+                        width={16}
+                        height={16}
                         onError={(e) => {
                           e.currentTarget.src = `https://www.google.com/s2/favicons?domain=${
                             new URL(sourceURL).hostname
@@ -3718,7 +3728,7 @@ Focus on the key sections and content, making it clean and modern.`;
                 msg.content.includes("Code generated!");
 
               // Get the files from metadata if this is a completion message
-              const completedFiles = msg.metadata?.appliedFiles || [];
+              const _completedFiles = msg.metadata?.appliedFiles || [];
 
               return (
                 <div key={idx} className="block">

@@ -35,10 +35,10 @@ const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const openrouter = createOpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1",
-});
+// const openrouter = createOpenAI({
+//   apiKey: process.env.OPENROUTER_API_KEY,
+//   baseURL: process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1",
+// });
 
 // Helper function to analyze user preferences from conversation history
 function analyzeUserPreferences(messages: ConversationMessage[]): {
@@ -225,7 +225,11 @@ export async function POST(request: NextRequest) {
               message: "🔍 Creating search plan...",
             });
 
-            const fileContents = global.sandboxState.fileCache.files;
+            const fileContents = global.sandboxState.fileCache?.files;
+            if (!fileContents) {
+              console.log("[generate-ai-code-stream] No file contents available");
+              return;
+            }
             console.log(
               "[generate-ai-code-stream] Files available for search:",
               Object.keys(fileContents).length
@@ -300,12 +304,6 @@ export async function POST(request: NextRequest) {
                     );
 
                     // Create surgical edit context with exact location
-                    const normalizedPath = target.filePath.replace(
-                      "/home/user/app/",
-                      ""
-                    );
-                    const fileContent =
-                      fileContents[normalizedPath]?.content || "";
 
                     // Build enhanced context with search results
                     enhancedSystemPrompt = `
@@ -454,7 +452,7 @@ User request: "${prompt}"`;
 
                         // For now, fall back to keyword search since we don't have file contents for search execution
                         // This path happens when no manifest was initially available
-                        let targetFiles = [];
+                        let targetFiles: string[] = [];
                         if (
                           !searchPlan ||
                           searchPlan.searchTerms.length === 0
@@ -1179,18 +1177,19 @@ CRITICAL: When files are provided in the context:
                   }
 
                   // Store files in cache
-                  for (const [path, content] of Object.entries(
-                    filesData.files
-                  )) {
-                    const normalizedPath = path.replace("/home/user/app/", "");
-                    global.sandboxState.fileCache.files[normalizedPath] = {
-                      content: content as string,
-                      lastModified: Date.now(),
-                    };
-                  }
+                  if (global.sandboxState.fileCache) {
+                    for (const [path, content] of Object.entries(
+                      filesData.files
+                    )) {
+                      const normalizedPath = path.replace("/home/user/app/", "");
+                      global.sandboxState.fileCache.files[normalizedPath] = {
+                        content: content as string,
+                        lastModified: Date.now(),
+                      };
+                    }
 
-                  if (filesData.manifest) {
-                    global.sandboxState.fileCache.manifest = filesData.manifest;
+                    if (filesData.manifest) {
+                      global.sandboxState.fileCache.manifest = filesData.manifest;
 
                     // Now try to analyze edit intent with the fetched manifest
                     if (!editContext) {
@@ -1245,12 +1244,13 @@ CRITICAL: When files are provided in the context:
                     }
                   }
 
-                  // Update variables
-                  backendFiles = global.sandboxState.fileCache.files;
-                  hasBackendFiles = Object.keys(backendFiles).length > 0;
-                  console.log(
-                    "[generate-ai-code-stream] Updated backend cache with fetched files"
-                  );
+                    // Update variables
+                    backendFiles = global.sandboxState.fileCache.files;
+                    hasBackendFiles = Object.keys(backendFiles).length > 0;
+                    console.log(
+                      "[generate-ai-code-stream] Updated backend cache with fetched files"
+                    );
+                  }
                 }
               }
             } catch (error) {
@@ -2042,7 +2042,7 @@ Provide the complete file content without any truncation. Include all necessary 
                 }
 
                 const completionResult = await streamText({
-                  model: completionClient(modelMapping[model] || model),
+                  model: completionClient(model),
                   messages: [
                     {
                       role: "system",
@@ -2051,10 +2051,7 @@ Provide the complete file content without any truncation. Include all necessary 
                     },
                     { role: "user", content: completionPrompt },
                   ],
-                  temperature: isGPT5
-                    ? undefined
-                    : appConfig.ai.defaultTemperature,
-                  maxTokens: appConfig.ai.truncationRecoveryMaxTokens,
+                  temperature: appConfig.ai.defaultTemperature,
                 });
 
                 // Get the full text from the stream

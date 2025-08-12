@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { parseJavaScriptFile, buildComponentTree } from "@/lib/file-parser";
 import { FileManifest, FileInfo, RouteInfo } from "@/types/file-manifest";
-import type { SandboxState } from "@/types/sandbox";
+// import type { SandboxState } from "@/types/sandbox";
 
 declare global {
   var activeSandbox: any;
@@ -170,7 +170,7 @@ function extractRoutes(files: Record<string, FileInfo>): RouteInfo[] {
       );
 
       for (const match of routeMatches) {
-        const [, routePath, componentRef] = match;
+        const [, routePath] = match;
         routes.push({
           path: routePath,
           component: path,
